@@ -1,0 +1,65 @@
+from manim import *
+
+class AdvancedCallCenter(Scene):
+    def construct(self):
+        # إعداد الخلفية والألوان
+        self.camera.background_color = "#1a1a1a"
+        primary_color = BLUE_D
+        accent_color = GREEN_A
+
+        # 1. تصميم واجهة العميل (Caller Dashboard)
+        screen = RoundedRectangle(height=5, width=8, corner_radius=0.2, color=GRAY_B)
+        header = Rectangle(height=0.6, width=8, fill_opacity=1, fill_color=primary_color, stroke_width=0).move_to(screen.get_top(), aligned_edge=UP)
+        title = Text("AGENT TERMINAL - ID: 405", font_size=20, color=WHITE).move_to(header)
+        
+        dashboard = VGroup(screen, header, title)
+
+        # 2. منطقة البيانات (Data Panel)
+        data_box = Rectangle(height=3, width=3.5, color=primary_color).shift(LEFT * 1.8 + DOWN * 0.5)
+        data_label = Text("CALLER INFO", font_size=18, color=GRAY_B).next_to(data_box, UP, aligned_edge=LEFT)
+        
+        # نصوص البيانات (ستتغير لاحقاً)
+        phone_txt = Text("Phone: --", font_size=22).move_to(data_box.get_top() + DOWN * 0.6)
+        loc_txt = Text("Location: --", font_size=22).next_to(phone_txt, DOWN, buff=0.4)
+        status_txt = Text("Status: IDLE", font_size=22, color=GRAY).next_to(loc_txt, DOWN, buff=0.4)
+        
+        info_group = VGroup(phone_txt, loc_txt, status_txt)
+
+        # 3. أيقونة الموظف (Agent Icon)
+        agent_icon = SVGMobject(None) # يمكن استبداله بدائرة إذا لم يتوفر ملف SVG
+        agent_circle = Circle(radius=0.8, color=accent_color).shift(RIGHT * 2 + UP * 0.5)
+        agent_label = Text("AGENT ACTIVE", font_size=16).next_to(agent_circle, DOWN)
+        
+        # --- بداية العرض ---
+        self.play(Create(dashboard), run_time=1)
+        self.play(FadeIn(data_box, data_label, info_group, agent_circle, agent_label))
+
+        # 4. محاكاة وصول مكالمة (The Incoming Call)
+        incoming_alert = Text("INCOMING CALL...", color=YELLOW).scale(0.8).to_edge(DOWN)
+        
+        self.play(Write(incoming_alert))
+        self.play(Indicate(incoming_alert), flash_color=RED)
+
+        # 5. تحديث البيانات "فجأة" (تأثير السيستم)
+        new_phone = Text("Phone: +20 102 334 556", font_size=22, color=accent_color).move_to(phone_txt)
+        new_loc = Text("Location: Cairo, EG", font_size=22).move_to(loc_txt)
+        new_status = Text("Status: CONNECTED", font_size=22, color=accent_color).move_to(status_txt)
+
+        self.play(
+            Transform(phone_txt, new_phone),
+            Transform(loc_txt, new_loc),
+            Transform(status_txt, new_status),
+            agent_circle.animate.set_fill(accent_color, opacity=0.3),
+            FadeOut(incoming_alert),
+            run_time=0.5
+        )
+
+        # 6. عداد الثواني (Live Timer)
+        timer = DecimalNumber(0, num_decimal_places=1, include_sign=False, color=WHITE)
+        timer.next_to(new_status, DOWN, buff=0.5)
+        timer_label = Text("Duration: ", font_size=20).next_to(timer, LEFT)
+        
+        self.play(Write(timer_label), FadeIn(timer))
+        self.play(timer.animate.set_value(15.5), run_time=4, rate_func=linear) # عداد يتحرك
+
+        self.wait(2)
